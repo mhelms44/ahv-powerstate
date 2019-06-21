@@ -5,8 +5,19 @@ parser.add_argument("acropolislog", type=argparse.FileType('r'), help="put your 
 parser.add_argument("vmlist", type=argparse.FileType('r'), help="put your vm list here")
 args = parser.parse_args()
 
-aLog = str(args.acropolislog.read())
+logs = str(args.acropolislog.read())
 vmList = str(args.vmlist.read())
 
 uuid = re.findall("[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}", vmList)
-print(uuid)
+#vmName = re.sub("[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}", "", vmList)
+#vmNameList = vmName.split('\n')
+
+#print(uuid)
+for vmsID in uuid:
+    for powerEvents in logs.split("\n"):
+        if vmsID in powerEvents:
+            grep = re.match(r'^[^:]+:(?P<date>.+?) INFO.+(?P<event>kPower[^\)]+)', powerEvents.strip())        
+            print(grep.group("date") + (" ") + grep.group("event"))    
+
+            
+            
