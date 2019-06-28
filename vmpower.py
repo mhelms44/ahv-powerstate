@@ -8,14 +8,13 @@ args = parser.parse_args()
 def main(acroplogs, vmlist):
     logs = str(args.acroplogs.read())
     vmList = str(args.vmlist.read())
-    uuid = re.findall( "[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}", vmList)
-    vmName = re.sub("[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}", "", vmList)
-    vmNameList = vmName.split()
-    for u, v in zip(uuid, vmNameList):
-        print(v + "\t" + u)
+    nameRegex = re.compile(r"^(?P<name>.+?)\s+(?P<uuid>[^\s]+)$", re.MULTILINE)
+
+    for match in nameRegex.finditer(vmList):
+        print(f'{match.group("name")}\t{match.group("uuid")}')
         for powerEvents in logs.split("/n"):
-            if u in powerEvents:
+            if match.group("uuid") in powerEvents:
                 grep = re.match(r'^[^:]+:(?P<date>.+?) INFO.+(?P<event>kPower[^\)]+)', powerEvents.strip())
-                print(v + " Had a power event at: " + grep.group("date") + (" ") + grep.group("event"))
+                print(match.group("name") + " Had a power event at: " + grep.group("date") + (" ") + grep.group("event"))
 
 main(acroplogs=args.acroplogs, vmlist=args.vmlist)
